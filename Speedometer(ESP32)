@@ -1,0 +1,101 @@
+/*
+ * Arquivo: TrabalhoFSIS.c
+ * Autor: Gabriel Henrick Ribeiro de Sousa - 12211ECP010
+ */
+
+#include <TFT_eSPI.h>
+#include <SPI.h>
+#include <NewPing.h>
+
+#define TRIGGER_PIN 27
+#define ECHO_PIN 26
+#define MAX_DISTANCE 200
+
+TFT_eSPI tft = TFT_eSPI();
+
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
+
+unsigned int distancia_inicial = 0;
+unsigned long tempo_inicial = 0;
+unsigned long tempo_ultima_medicao = 0;
+const int num_medicoes = 10;
+unsigned int distancias[num_medicoes];
+unsigned int idx_distancias = 0;
+
+void setup() {
+  Serial.begin(9600);
+  tft.init();
+  tft.setRotation(3);
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE);
+  tft.setTextSize(2);
+
+  // Medir distâncias iniciais
+  for (int i = 0; i < num_medicoes; i++) {
+    distancias[i] = sonar.ping_cm();
+  }
+  distancia_inicial = distancias[0];
+  tempo_inicial = millis();
+}
+
+void loop() {
+  delay(80);
+
+  // Medir distância atual
+  unsigned int distancia_atual = sonar.ping_cm();
+
+  // Adicionar medição à lista circular
+  idx_distancias = (idx_distancias + 1) % num_medicoes;
+  distancias[idx_distancias] = distancia_atual;
+
+  // Calcular média das últimas n medições de distância
+  unsigned long sum = 0;
+  for (int i = 0; i < num_medicoes; i++) {
+    sum += distancias[i];
+  }
+  float media_distancias = (float)sum / num_medicoes;
+
+  // Calcular velocidade média
+  unsigned long tempo_atual = millis();
+  float delta_distancia = abs(media_distancias - distancia_inicial);
+  float delta_tempo = (tempo_atual - tempo_inicial) / 1000.0;
+  float velocidade_media = delta_distancia / delta_tempo;
+  
+  // Verificar se já passou tempo suficiente desde a última medição de velocidade
+  unsigned long duracao_exibicao = 5000; // 
+  if (tempo_atual - tempo_ultima_medicao >= duracao_exibicao) {
+    // Exibir velocidade na tela
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(0, 0);
+    Serial.println("\n");
+    Serial.println(velocidade_media);
+    Serial.println(" Velocidade: ");
+    tft.print("\n");
+    tft.println("======|RADAR|=======");
+    tft.printf("\n");
+    tft.println("====================");
+    tft.println("\n");
+    tft.print(" Velo (cm/s): ");
+    tft.print(velocidade_media);
+    tft.print("\n\n");
+
+    // Convert velocity to km/h and m/s
+    float velocidade_km_h = velocidade_media * 0.036; // cm/s to km/h
+    float velocidade_m_s = velocidade_media * 0.01; // cm/s to m/s
+
+    tft.print(" Velo (km/h): ");
+    tft.print(velocidade_km_h);
+    tft.print("\n\n");
+    tft.print(" Velo (m/s): ");
+    tft.print(velocidade_m_s);
+    tft.print("\n\n");
+    tft.println("====================");
+    
+    // Atualizar tempo da última medição
+    tempo_ultima_medicao = tempo_atual;
+    
+    // Atualizar valores iniciais para próxima medição
+    distancia_inicial = media_distancias;
+    tempo_inicial = tempo_atual;
+  }
+}
