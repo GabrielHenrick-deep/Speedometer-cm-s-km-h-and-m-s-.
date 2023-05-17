@@ -9,7 +9,7 @@
 
 #define TRIGGER_PIN 27
 #define ECHO_PIN 26
-#define MAX_DISTANCE 200
+#define MAX_DISTANCE 200 // cm
 
 TFT_eSPI tft = TFT_eSPI();
 
