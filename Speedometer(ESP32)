@@ -1,6 +1,7 @@
 /*
- * Arquivo: TrabalhoFSIS.c
+ * Arquivo: TrabalhoFSIS.ino
  * Autor: Gabriel Henrick Ribeiro de Sousa - 12211ECP010
+ * Speedometer cm/s
  */
 
 #include <TFT_eSPI.h>
@@ -79,7 +80,7 @@ void loop() {
     tft.print(velocidade_media);
     tft.print("\n\n");
 
-    // Convert velocity to km/h and m/s
+    // Converte de cm/s para km/h e m/s
     float velocidade_km_h = velocidade_media * 0.036; // cm/s to km/h
     float velocidade_m_s = velocidade_media * 0.01; // cm/s to m/s
 
