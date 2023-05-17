@@ -63,7 +63,7 @@ void loop() {
   float velocidade_media = delta_distancia / delta_tempo;
   
   // Verificar se já passou tempo suficiente desde a última medição de velocidade
-  unsigned long duracao_exibicao = 5000; // 
+  unsigned long duracao_exibicao = 5000; 
   if (tempo_atual - tempo_ultima_medicao >= duracao_exibicao) {
     // Exibir velocidade na tela
     tft.fillScreen(TFT_BLACK);
